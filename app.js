@@ -14,9 +14,97 @@
   const loading = document.getElementById('loading');
   const inputLabel = document.getElementById('inputLabel');
   const outputLabel = document.getElementById('outputLabel');
+  const speakBtn = document.getElementById('speakBtn');
 
   let currentController = null;
   let debounceTimer = null;
+  let currentAudio = null;
+  let currentAudioUrl = null;
+
+  // ElevenLabs config (override via localStorage: ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID)
+  const getElevenKey = () => {
+    return (
+      localStorage.getItem('ELEVENLABS_API_KEY') ||
+      'sk_8716206eb0dbaccb988da34c33a13e8d06bc1551a3dc3137'
+    );
+  };
+  const getVoiceId = () => {
+    return localStorage.getItem('ELEVENLABS_VOICE_ID') || '21m00Tcm4TlvDq8ikWAM'; // Rachel
+  };
+
+  function updateSpeakState() {
+    if (!speakBtn) return;
+    const hasText = !!outputText.value.trim();
+    speakBtn.disabled = !hasText;
+  }
+
+  function cleanupAudio() {
+    if (currentAudio) {
+      try { currentAudio.pause(); } catch (_) {}
+      currentAudio = null;
+    }
+    if (currentAudioUrl) {
+      URL.revokeObjectURL(currentAudioUrl);
+      currentAudioUrl = null;
+    }
+  }
+
+  async function speakOutput() {
+    const text = outputText.value.trim();
+    if (!text) return;
+
+    // Toggle to stop if already playing
+    if (currentAudio && !currentAudio.paused) {
+      cleanupAudio();
+      updateSpeakState();
+      return;
+    }
+
+    const apiKey = getElevenKey();
+    const voiceId = getVoiceId();
+    if (!apiKey) {
+      alert('Missing ElevenLabs API key. Set localStorage.ELEVENLABS_API_KEY.');
+      return;
+    }
+
+    speakBtn.disabled = true;
+
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg'
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_turbo_v2_5',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+        })
+      });
+
+      if (!res.ok) throw new Error('TTS request failed');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      cleanupAudio();
+      currentAudioUrl = url;
+      currentAudio = new Audio(url);
+      currentAudio.onended = () => {
+        cleanupAudio();
+        updateSpeakState();
+      };
+      await currentAudio.play();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to play speech.');
+      cleanupAudio();
+    } finally {
+      // Re-enable when idle; will disable itself again if playing
+      if (!currentAudio) speakBtn.disabled = false;
+    }
+  }
 
   function syncPlaceholders() {
     if (fromSelect.value === 'english') {
@@ -99,6 +187,7 @@
     } finally {
       setLoading(false);
       currentController = null;
+      updateSpeakState();
     }
   }
 
@@ -114,6 +203,8 @@
     outputText.value = '';
     setLoading(false);
     inputText.focus();
+    cleanupAudio();
+    updateSpeakState();
   }
 
   fromSelect.addEventListener('change', syncPlaceholders);
@@ -127,6 +218,7 @@
     translate();
   });
   clearBtn.addEventListener('click', clearAll);
+  if (speakBtn) speakBtn.addEventListener('click', speakOutput);
   inputText.addEventListener('input', () => {
     if (currentController) currentController.abort();
     clearTimeout(debounceTimer);
@@ -142,4 +234,5 @@
 
   syncPlaceholders();
   inputText.focus();
+  updateSpeakState();
 })();
