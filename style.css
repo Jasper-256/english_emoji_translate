@@ -1,6 +1,7 @@
 * { box-sizing: border-box; }
 
 :root {
+  color-scheme: light dark;
   --bg: #f6f7fb;
   --card: #ffffff;
   --text: #0b0f18;
@@ -11,13 +12,28 @@
   --accent: #e8f0fe;
   --success: #16a34a;
   --danger: #ef4444;
+  /* surfaces */
+  --surface: #ffffff;
+  --surface-subtle: #fbfdff;
+  --hover: #f3f4f6;
+  /* backgrounds */
+  --bg-gradient-start: #f9fafb;
+  --bg-gradient-end: #eef2ff;
+  /* danger variants */
+  --danger-bg: #fee2e2;
+  --danger-border: #fecaca;
+  --danger-text: #991b1b;
+  /* shadows */
+  --shadow: 0 4px 24px rgba(0,0,0,0.05);
+  --shadow-strong: 0 4px 16px rgba(0,0,0,0.06);
 }
 
 html, body {
   height: 100%;
   margin: 0;
   color: var(--text);
-  background: linear-gradient(180deg, #f9fafb 0%, #eef2ff 100%) fixed;
+  background-color: var(--bg);
+  background: linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%) fixed;
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
@@ -50,13 +66,13 @@ html, body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .controls {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; gap: 12px; border-bottom: 1px solid var(--border); background: #fbfdff;
+  padding: 12px 16px; gap: 12px; border-bottom: 1px solid var(--border); background: var(--surface-subtle);
 }
 
 .langs {
@@ -68,7 +84,7 @@ html, body {
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: white;
+  background: var(--surface);
   font: inherit;
   color: var(--text);
 }
@@ -76,20 +92,20 @@ html, body {
 .swap {
   display: inline-flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: 10px;
-  border: 1px solid var(--border); background: white; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface); cursor: pointer;
 }
 
-.swap:hover { background: #f3f4f6; }
+.swap:hover { background: var(--hover); }
 
 .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 .btn {
-  padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: white; cursor: pointer; font: inherit;
+  padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); cursor: pointer; font: inherit;
 }
 .btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
 .btn.primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
-.btn.ghost:hover { background: #f3f4f6; }
-.btn.danger { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+.btn.ghost:hover { background: var(--hover); }
+.btn.danger { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
 
 .grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 0; border-top: 1px solid var(--border);
@@ -102,7 +118,7 @@ html, body {
 .label { color: var(--muted); font-size: 12px; }
 
 .textarea {
-  resize: vertical;
+  resize: none;
   min-height: 240px;
   flex: 1;
   width: 100%;
@@ -110,11 +126,20 @@ html, body {
   border-radius: 10px;
   border: 1px solid var(--border);
   font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  background: #ffffff;
+  background: var(--surface);
   color: var(--text);
 }
 
-.textarea[readonly] { background: #fbfbfd; }
+.textarea[readonly] { background: var(--surface); }
+
+/* Make the output textarea non-selectable while keeping scroll and copy button working */
+#outputText {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  caret-color: transparent;
+}
 
 .helper { color: var(--muted); font-size: 12px; }
 
@@ -123,8 +148,8 @@ html, body {
 .loading {
   position: absolute; inset: 8px 8px auto auto; top: 8px; right: 8px;
   display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px; background: #ffffff; border: 1px solid var(--border); border-radius: 999px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+  box-shadow: var(--shadow-strong);
 }
 .loading.hidden { display: none; }
 
@@ -135,11 +160,37 @@ html, body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .footer {
-  padding: 10px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #fbfdff;
+  padding: 10px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface-subtle);
 }
 
 .kbd { 
-  padding: 2px 6px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px; background: #fff; font-size: 12px; 
+  padding: 2px 6px; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 6px; background: var(--surface); font-size: 12px; 
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Neutral, less-blue dark palette */
+    --bg: #0e1116;
+    --card: #111418;
+    --text: #e5e7eb;
+    --muted: #a0a7b1;
+    --border: #222a34;
+    --primary: #1a73e8;
+    --primary-dark: #2b8af5;
+    --accent: #151a22;
+    --success: #16a34a;
+    --danger: #ef4444;
+    --surface: #111418;
+    --surface-subtle: #0d1014;
+    --hover: #1a1f27;
+    --bg-gradient-start: #0d1014;
+    --bg-gradient-end: #111418;
+    --danger-bg: #3a1f1f;
+    --danger-border: #7f1d1d;
+    --danger-text: #fecaca;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-strong: 0 4px 16px rgba(0,0,0,0.5);
+  }
 }
 
 @media (max-width: 840px) {
