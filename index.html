@@ -19,12 +19,12 @@
     <div class="card">
       <div class="controls">
         <div class="langs">
-          <select id="fromSelect" class="select">
+          <select id="fromSelect" class="select" disabled>
             <option value="english">English</option>
             <option value="emoji">Emoji</option>
           </select>
           <button id="swapBtn" class="swap" title="Swap languages">↔</button>
-          <select id="toSelect" class="select">
+          <select id="toSelect" class="select" disabled>
             <option value="emoji">Emoji</option>
             <option value="english">English</option>
           </select>
@@ -41,7 +41,6 @@
         <div class="panel">
           <div class="label" id="inputLabel">From English</div>
           <textarea id="inputText" class="textarea" placeholder="Type something in English..."></textarea>
-          <div class="helper">Press <span class="kbd">⌘</span> + <span class="kbd">Enter</span> to translate</div>
         </div>
         <div class="panel">
           <div class="label" id="outputLabel">To Emoji</div>
@@ -50,14 +49,13 @@
               <div class="spinner"></div>
               <div>Translating…</div>
             </div>
-            <textarea id="outputText" class="textarea" readonly placeholder="Translation will appear here…"></textarea>
+            <textarea id="outputText" class="textarea" readonly placeholder="Translation will appear here..."></textarea>
           </div>
         </div>
       </div>
 
       <div class="footer">
-        <div>Streaming API responses; chunks append live.</div>
-        <div><span class="kbd">Tab</span> between fields • <span class="kbd">⌘</span> + <span class="kbd">Enter</span> to translate</div>
+        <div class="helper">Press <span class="kbd">⌘</span> + <span class="kbd">Enter</span> to translate</div>
       </div>
     </div>
   </div>

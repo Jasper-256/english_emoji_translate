@@ -29,7 +29,7 @@
     } else {
       inputLabel.textContent = 'From Emoji';
       outputLabel.textContent = 'To English';
-      inputText.placeholder = 'Paste or type emojis…';
+      inputText.placeholder = 'Paste or type emojis...';
       toSelect.value = 'english';
     }
   }
@@ -48,8 +48,6 @@
     loading.classList.toggle('hidden', !isLoading);
     translateBtn.disabled = isLoading;
     stopBtn.disabled = !isLoading;
-    fromSelect.disabled = isLoading;
-    toSelect.disabled = isLoading;
     swapBtn.disabled = isLoading;
   }
 
