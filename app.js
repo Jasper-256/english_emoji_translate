@@ -10,9 +10,7 @@
   const inputText = document.getElementById('inputText');
   const outputText = document.getElementById('outputText');
   const translateBtn = document.getElementById('translateBtn');
-  const copyBtn = document.getElementById('copyBtn');
   const clearBtn = document.getElementById('clearBtn');
-  const stopBtn = document.getElementById('stopBtn');
   const loading = document.getElementById('loading');
   const inputLabel = document.getElementById('inputLabel');
   const outputLabel = document.getElementById('outputLabel');
@@ -47,7 +45,6 @@
   function setLoading(isLoading) {
     loading.classList.toggle('hidden', !isLoading);
     translateBtn.disabled = isLoading;
-    stopBtn.disabled = !isLoading;
     swapBtn.disabled = isLoading;
   }
 
@@ -105,14 +102,7 @@
     }
   }
 
-  async function copyOutput() {
-    if (!outputText.value) return;
-    try {
-      await navigator.clipboard.writeText(outputText.value);
-      copyBtn.textContent = 'Copied';
-      setTimeout(() => (copyBtn.textContent = 'Copy'), 900);
-    } catch {}
-  }
+  // copy and stop controls removed
 
   function clearAll() {
     clearTimeout(debounceTimer);
@@ -136,8 +126,6 @@
     clearTimeout(debounceTimer);
     translate();
   });
-  stopBtn.addEventListener('click', () => currentController && currentController.abort());
-  copyBtn.addEventListener('click', copyOutput);
   clearBtn.addEventListener('click', clearAll);
   inputText.addEventListener('input', () => {
     if (currentController) currentController.abort();
