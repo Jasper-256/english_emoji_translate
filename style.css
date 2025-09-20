@@ -158,6 +158,19 @@ html, body {
 /* Ensure speak button doesn't overlap output text */
 #outputText { padding-right: 56px; }
 
+/* Image result below emoji textbox */
+.image-result {
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+.image-result img {
+  max-width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
 .loading {
   position: absolute; inset: 8px 8px auto auto; top: 8px; right: 8px;
   display: flex; align-items: center; gap: 8px;

@@ -15,6 +15,8 @@
   const inputLabel = document.getElementById('inputLabel');
   const outputLabel = document.getElementById('outputLabel');
   const speakBtn = document.getElementById('speakBtn');
+  const imageBtn = document.getElementById('imageBtn');
+  const imageResult = document.getElementById('imageResult');
 
   let currentController = null;
   let debounceTimer = null;
@@ -118,6 +120,7 @@
       inputText.placeholder = 'Paste or type emojis...';
       toSelect.value = 'english';
     }
+    updateModeButtons();
   }
 
   function swapLanguages() {
@@ -136,6 +139,17 @@
     swapBtn.disabled = isLoading;
   }
 
+  function isOutputEmojiMode() {
+    return toSelect.value === 'emoji';
+  }
+
+  function updateModeButtons() {
+    const emojiMode = isOutputEmojiMode();
+    if (imageBtn) imageBtn.style.display = emojiMode ? '' : 'none';
+    if (speakBtn) speakBtn.style.display = emojiMode ? 'none' : '';
+    updateSpeakState();
+  }
+
   function selectEndpoint() {
     return fromSelect.value === 'english' ? endpoints.englishToEmoji : endpoints.emojiToEnglish;
   }
@@ -144,6 +158,7 @@
     const message = inputText.value.trim();
     if (!message) {
       outputText.value = '';
+      if (imageResult) { imageResult.style.display = 'none'; imageResult.innerHTML = ''; }
       return;
     }
 
@@ -154,6 +169,7 @@
 
     outputText.value = '';
     setLoading(true);
+    if (imageResult) { imageResult.style.display = 'none'; imageResult.innerHTML = ''; }
 
     const controller = new AbortController();
     currentController = controller;
@@ -205,6 +221,81 @@
     inputText.focus();
     cleanupAudio();
     updateSpeakState();
+    if (imageResult) { imageResult.style.display = 'none'; imageResult.innerHTML = ''; }
+  }
+
+  async function fileToBase64(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to load base image');
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result || '';
+        const base64 = String(result).split(',')[1] || '';
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function generateShelfImage() {
+    const emojis = outputText.value.trim();
+    if (!emojis) return;
+
+    if (imageBtn) imageBtn.disabled = true;
+    try {
+      const base64 = await fileToBase64('./shelf.png');
+      const apiKey = 'AIzaSyCP7rQJ1cJhchAAxfL91VvszQzPwn_5le0';
+      const model = 'gemini-2.5-flash-image-preview'; // "nano banana"
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const prompt = `Put these emojis on the bottom shelf: "${emojis}". Leave everything else unchanged.`;
+
+      const body = {
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: prompt },
+              { inline_data: { mime_type: 'image/png', data: base64 } }
+            ]
+          }
+        ]
+      };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data?.error?.message || 'Image generation failed';
+        throw new Error(msg);
+      }
+
+      const candidates = (data && data.candidates) || [];
+      const parts = candidates[0]?.content?.parts || [];
+      const imgPart = parts.find(p => p.inline_data || p.inlineData);
+      const mime = imgPart?.inline_data?.mime_type || imgPart?.inlineData?.mimeType || 'image/png';
+      const b64 = imgPart?.inline_data?.data || imgPart?.inlineData?.data;
+      if (!b64) throw new Error('No image in response');
+
+      const img = document.createElement('img');
+      img.alt = 'Generated shelf image';
+      img.src = `data:${mime};base64,${b64}`;
+      if (imageResult) {
+        imageResult.innerHTML = '';
+        imageResult.appendChild(img);
+        imageResult.style.display = '';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to generate image.');
+    } finally {
+      if (imageBtn) imageBtn.disabled = false;
+    }
   }
 
   fromSelect.addEventListener('change', syncPlaceholders);
@@ -219,6 +310,7 @@
   });
   clearBtn.addEventListener('click', clearAll);
   if (speakBtn) speakBtn.addEventListener('click', speakOutput);
+  if (imageBtn) imageBtn.addEventListener('click', generateShelfImage);
   inputText.addEventListener('input', () => {
     if (currentController) currentController.abort();
     clearTimeout(debounceTimer);
@@ -235,4 +327,5 @@
   syncPlaceholders();
   inputText.focus();
   updateSpeakState();
+  updateModeButtons();
 })();
