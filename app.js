@@ -127,7 +127,11 @@
   }
 
   fromSelect.addEventListener('change', syncPlaceholders);
-  swapBtn.addEventListener('click', swapLanguages);
+  swapBtn.addEventListener('click', () => {
+    clearTimeout(debounceTimer);
+    swapLanguages();
+    translate();
+  });
   translateBtn.addEventListener('click', () => {
     clearTimeout(debounceTimer);
     translate();
@@ -138,7 +142,7 @@
   inputText.addEventListener('input', () => {
     if (currentController) currentController.abort();
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(translate, 500);
+    debounceTimer = setTimeout(translate, 200);
   });
   inputText.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
