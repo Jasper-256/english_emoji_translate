@@ -69,7 +69,7 @@
       return;
     }
 
-    speakBtn.disabled = true;
+    setButtonLoading(speakBtn, true);
 
     try {
       const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -98,10 +98,12 @@
         updateSpeakState();
       };
       await currentAudio.play();
+      setButtonLoading(speakBtn, false);
     } catch (err) {
       console.error(err);
       alert('Failed to play speech.');
       cleanupAudio();
+      setButtonLoading(speakBtn, false);
     } finally {
       // Re-enable when idle; will disable itself again if playing
       if (!currentAudio) speakBtn.disabled = false;
@@ -148,6 +150,24 @@
     if (imageBtn) imageBtn.style.display = emojiMode ? '' : 'none';
     if (speakBtn) speakBtn.style.display = emojiMode ? 'none' : '';
     updateSpeakState();
+  }
+
+  // Swap a button's content with a spinner while loading
+  function setButtonLoading(btn, isLoading) {
+    if (!btn) return;
+    if (isLoading) {
+      if (!btn.dataset.originalHtml) btn.dataset.originalHtml = btn.innerHTML;
+      btn.innerHTML = '<div class="spinner"></div>';
+      btn.disabled = true;
+      btn.setAttribute('aria-busy', 'true');
+    } else {
+      if (btn.dataset.originalHtml !== undefined) {
+        btn.innerHTML = btn.dataset.originalHtml;
+        btn.dataset.originalHtml = '';
+      }
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+    }
   }
 
   function selectEndpoint() {
@@ -244,13 +264,13 @@
     const emojis = outputText.value.trim();
     if (!emojis) return;
 
-    if (imageBtn) imageBtn.disabled = true;
+    if (imageBtn) setButtonLoading(imageBtn, true);
     try {
       const base64 = await fileToBase64('./shelf.png');
       const apiKey = 'AIzaSyCP7rQJ1cJhchAAxfL91VvszQzPwn_5le0';
       const model = 'gemini-2.5-flash-image-preview'; // "nano banana"
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const prompt = `Put these emojis on the bottom shelf: "${emojis}". Leave everything else unchanged.`;
+      const prompt = `Put these emojis in order on the bottom shelf: "${emojis}". Make them look like iOS emoji. Leave everything else unchanged.`;
 
       const body = {
         contents: [
@@ -294,7 +314,7 @@
       console.error(err);
       alert('Failed to generate image.');
     } finally {
-      if (imageBtn) imageBtn.disabled = false;
+      if (imageBtn) setButtonLoading(imageBtn, false);
     }
   }
 
