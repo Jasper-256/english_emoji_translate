@@ -160,7 +160,7 @@ html, body {
 
 /* Image result below emoji textbox */
 .image-result {
-  margin-top: 8px;
+  margin-top: 0;
   display: grid;
   gap: 8px;
 }
@@ -222,4 +222,12 @@ html, body {
 @media (max-width: 840px) {
   .grid { grid-template-columns: 1fr; }
   .panel + .panel { border-left: none; border-top: 1px solid var(--border); }
+}
+
+/* Force text areas to be perfect squares based on their width */
+.textarea {
+  aspect-ratio: 1 / 1;
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
 }

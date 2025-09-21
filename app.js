@@ -17,6 +17,7 @@
   const speakBtn = document.getElementById('speakBtn');
   const imageBtn = document.getElementById('imageBtn');
   const imageResult = document.getElementById('imageResult');
+  const outputWrap = document.querySelector('.output-wrap');
 
   let currentController = null;
   let debounceTimer = null;
@@ -37,7 +38,7 @@
   function updateSpeakState() {
     if (!speakBtn) return;
     const hasText = !!outputText.value.trim();
-    speakBtn.disabled = !hasText;
+    // speakBtn.disabled = !hasText;
   }
 
   function cleanupAudio() {
@@ -150,6 +151,15 @@
     if (imageBtn) imageBtn.style.display = emojiMode ? '' : 'none';
     if (speakBtn) speakBtn.style.display = emojiMode ? 'none' : '';
     updateSpeakState();
+  }
+
+  function setOutputTextareaHidden(hidden) {
+    if (outputWrap) {
+      outputWrap.style.display = hidden ? 'none' : '';
+      return;
+    }
+    if (!outputText) return;
+    outputText.style.display = hidden ? 'none' : '';
   }
 
   // Swap a button's content with a spinner while loading
@@ -310,6 +320,10 @@
         imageResult.appendChild(img);
         imageResult.style.display = '';
       }
+      // Hide output UI elements after successful generation
+      setOutputTextareaHidden(true);
+      if (imageBtn) imageBtn.style.display = 'none';
+      if (speakBtn) speakBtn.style.display = 'none';
     } catch (err) {
       console.error(err);
       alert('Failed to generate image.');
@@ -321,6 +335,9 @@
   fromSelect.addEventListener('change', syncPlaceholders);
   swapBtn.addEventListener('click', () => {
     clearTimeout(debounceTimer);
+    // Ensure the right UI is visible again when swapping
+    setOutputTextareaHidden(false);
+    if (imageResult) { imageResult.style.display = 'none'; imageResult.innerHTML = ''; }
     swapLanguages();
     translate();
   });
@@ -334,6 +351,9 @@
   inputText.addEventListener('input', () => {
     if (currentController) currentController.abort();
     clearTimeout(debounceTimer);
+    setOutputTextareaHidden(false);
+    // Restore buttons according to current mode when user types again
+    updateModeButtons();
     debounceTimer = setTimeout(translate, 200);
   });
   inputText.addEventListener('keydown', (e) => {
